@@ -1,0 +1,383 @@
+{
+    "name": "CopyData",
+    "properties": {
+        "activities": [
+            {
+                "name": "Copy Payment Method Data",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "ParquetSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFileName": "*.parquet",
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "ParquetReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "preCopyScript": "TRUNCATE TABLE dbo.DimPaymentMethod;",
+                        "writeBehavior": "insert",
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "mappings": [
+                            {
+                                "source": {
+                                    "name": "payment_id",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "payment_id",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "payment_type",
+                                    "type": "String",
+                                    "physicalType": "UTF8"
+                                },
+                                "sink": {
+                                    "name": "payment_type",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            }
+                        ],
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "chicago_taxi_payment_type_data",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "PaymentMethod",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "Copy Trips Data",
+                "description": "",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "Copy Payment Method Data",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "ParquetSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "wildcardFileName": "*.parquet",
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "ParquetReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "preCopyScript": "TRUNCATE TABLE dbo.StageTrips;",
+                        "writeBehavior": "insert",
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "mappings": [
+                            {
+                                "source": {
+                                    "name": "trip_start_date",
+                                    "type": "DateTime",
+                                    "physicalType": "DATE"
+                                },
+                                "sink": {
+                                    "name": "trip_start_date",
+                                    "type": "DateTime",
+                                    "physicalType": "date"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "trip_end_date",
+                                    "type": "DateTime",
+                                    "physicalType": "DATE"
+                                },
+                                "sink": {
+                                    "name": "trip_end_date",
+                                    "type": "DateTime",
+                                    "physicalType": "date"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "taxi_id",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "taxi_id",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "pickup_community_area",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "pickup_community_area",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "dropoff_community_area",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "dropoff_community_area",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "payment_id",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "payment_id",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "company",
+                                    "type": "Int32",
+                                    "physicalType": "INT_32"
+                                },
+                                "sink": {
+                                    "name": "company",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "trips",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "trips",
+                                    "type": "Int64",
+                                    "physicalType": "bigint"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "avg_trip_seconds",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "avg_trip_seconds",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "avg_trip_miles",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "avg_trip_miles",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "fare",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "fare",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "tips",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "tips",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "tolls",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "tolls",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "extras",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "extras",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "trip_total",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "trip_total",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 18
+                                }
+                            }
+                        ],
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "chicago_taxi_gold_data",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "InfoTrips",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "Copy from Stage to Fact Table",
+                "type": "Script",
+                "dependsOn": [
+                    {
+                        "activity": "Copy Trips Data",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "linkedServiceName": {
+                    "referenceName": "chicago_taxi_db",
+                    "type": "LinkedServiceReference"
+                },
+                "typeProperties": {
+                    "scripts": [
+                        {
+                            "type": "Query",
+                            "text": "INSERT INTO dbo.FactTrips\nSELECT * FROM dbo.StageTrips;"
+                        }
+                    ],
+                    "scriptBlockExecutionTimeout": "02:00:00"
+                }
+            }
+        ],
+        "annotations": [],
+        "lastPublishTime": "2025-04-27T13:45:25Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
